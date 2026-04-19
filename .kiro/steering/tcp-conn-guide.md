@@ -1,9 +1,8 @@
 ---
-inclusion: fileMatch
-fileMatchPattern: "tcp-conn/**"
+inclusion: auto
 ---
 
-# tcp-conn Package Guide
+# TCP Package Guide
 
 ## Key Files
 

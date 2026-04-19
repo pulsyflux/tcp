@@ -1,4 +1,4 @@
-package tcpconn
+package tcp
 
 import (
 	"context"

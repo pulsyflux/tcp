@@ -1,4 +1,4 @@
-module github.com/pulsyflux/broker
+module github.com/pulsyflux/tcp
 
 go 1.25
 

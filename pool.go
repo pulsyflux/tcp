@@ -1,8 +1,7 @@
-package tcpconn
+package tcp
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -71,7 +70,6 @@ func (cp *connectionPool) release(address string) {
 		if atomic.AddInt32(&pool.refCount, -1) == 0 {
 			pool.cancel()
 			pool.conn.Close()
-			fmt.Printf("Physical connection to %s closed\n", address)
 			delete(cp.pools, address)
 		}
 	}
