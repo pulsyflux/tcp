@@ -197,6 +197,10 @@ func (t *Connection) Send(data []byte) error {
 	idLen := byte(len(idBytes))
 	totalLen := uint32(len(data))
 
+	if totalLen > maxMessageSize {
+		return errMessageTooLarge
+	}
+
 	for offset := 0; offset < len(data); offset += chunkSize {
 		end := offset + chunkSize
 		if end > len(data) {

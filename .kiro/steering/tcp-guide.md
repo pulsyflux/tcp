@@ -6,10 +6,13 @@ inclusion: auto
 
 ## Key Files
 
-- `logical.go` — `Connection` struct, `NewConnection`, `WrapConnection`, `Send`, `Receive`, idle monitor
-- `pool.go` — `connectionPool` (global), `physicalPool` (client-side), `wrappedPool` (server-side)
+- `logical.go` — `Connection` struct, `NewConnection`, `WrapConnection`, `Send`, `Receive`, idle monitor, `wrappedPool`
+- `pool.go` — `connectionPool` (global), `physicalPool` (client-side pooling with ref counting)
 - `demux.go` — `demuxer` struct, single-reader goroutine, UUID-based message routing, chunk reassembly
 - `errors.go` — sentinel errors: `errConnectionClosed`, `errConnectionDead`, `errConnectionInUse`
+- `connection_test.go` — unit tests for send/receive, large messages, multiplexing, pool ref counting, concurrent use
+- `connection_bench_test.go` — benchmarks for small/large messages, chunking, pooling, send-only, receive-only
+- `logical_connections_test.go` — integration test for server+client multiplexed logical connections
 
 ## Connection Lifecycle
 
@@ -34,7 +37,11 @@ inclusion: auto
 
 ## Important Constraints
 
-- Only one concurrent `Send` and one concurrent `Receive` per `Connection` (atomic guards)
+- Only one concurrent `Send` and one concurrent `Receive` per `Connection` (atomic CAS guards)
 - `Receive` reads from channel, not socket — always goes through demuxer
 - Client connections auto-reconnect; server (wrapped) connections do not
 - Pool uses reference counting — physical connection closes when last logical connection releases
+- `close()` is unexported — connections are closed via idle timeout or context cancellation
+- Maximum message size: 16MB (`maxMessageSize`) — enforced on both send and receive
+- Maximum pending incomplete message streams per connection: 64 (`maxPendingStreams`)
+- No TLS — plaintext TCP only. Use a TLS proxy or tunnel for encryption

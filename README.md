@@ -70,7 +70,7 @@ adminData, _ := conn2.Receive()
 Detailed docs live in [`.kiro/steering/`](.kiro/steering/):
 
 - [Project Overview](.kiro/steering/project-overview.md) — architecture, module info, performance summary
-- [TCP Package Guide](.kiro/steering/tcp-conn-guide.md) — internals, connection lifecycle, frame format, demuxer, constraints
+- [TCP Package Guide](.kiro/steering/tcp-guide.md) — internals, connection lifecycle, frame format, demuxer, constraints
 - [Coding Standards](.kiro/steering/coding-standards.md) — conventions, wire protocol, thread safety, testing patterns
 - [CI Workflow Guide](.kiro/steering/ci-workflow-guide.md) — GitHub Actions and local CI with Act
 

@@ -11,6 +11,8 @@ A high-performance TCP connection abstraction library written in Go.
 - Go module: `github.com/pulsyflux/tcp` (go 1.25)
 - Go package: `tcp`
 - Dependency: `github.com/google/uuid v1.6.0`
+- Published: `https://pkg.go.dev/github.com/pulsyflux/tcp`
+- Source: `https://github.com/pulsyflux/tcp`
 
 ## Architecture
 
@@ -26,12 +28,21 @@ Provides multiplexed TCP connections with:
 Key types:
 - `Connection` — logical connection (client via `NewConnection`, server via `WrapConnection`)
 - `demuxer` — single-reader goroutine per physical connection, routes by UUID
-- `physicalPool` / `wrappedPool` — connection pooling with reference counting
+- `physicalPool` — client-side connection pooling with reference counting
+- `wrappedPool` — server-side pooling for accepted connections
+
+## Public API
+
+- `NewConnection(address string, id uuid.UUID) *Connection` — client-side, auto-reconnect
+- `WrapConnection(conn net.Conn, id uuid.UUID) *Connection` — server-side, no reconnect
+- `(*Connection).Send(data []byte) error`
+- `(*Connection).Receive() ([]byte, error)`
 
 ## Testing
 
 - `go test -v` — run all tests
 - `go test -bench=. -benchmem` — run benchmarks
+- Tests use `127.0.0.1:0` for OS-assigned ports
 
 ## Performance
 

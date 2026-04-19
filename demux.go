@@ -2,9 +2,15 @@ package tcp
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"net"
 	"sync"
+
+	"github.com/google/uuid"
+)
+
+const (
+	maxMessageSize    = 16 * 1024 * 1024 // 16MB max message size
+	maxPendingStreams = 64                // max incomplete message assemblies per connection
 )
 
 type messageAssembly struct {
@@ -66,11 +72,19 @@ func (d *demuxer) run() {
 		}
 		totalLen := uint32(totalLenBuf[0])<<24 | uint32(totalLenBuf[1])<<16 | uint32(totalLenBuf[2])<<8 | uint32(totalLenBuf[3])
 
+		if totalLen > maxMessageSize {
+			return
+		}
+
 		chunkLenBuf := make([]byte, 4)
 		if err := d.readFull(chunkLenBuf); err != nil {
 			return
 		}
 		chunkLen := uint32(chunkLenBuf[0])<<24 | uint32(chunkLenBuf[1])<<16 | uint32(chunkLenBuf[2])<<8 | uint32(chunkLenBuf[3])
+
+		if chunkLen > maxMessageSize {
+			return
+		}
 
 		chunk := make([]byte, chunkLen)
 		if err := d.readFull(chunk); err != nil {
@@ -79,6 +93,9 @@ func (d *demuxer) run() {
 
 		assembly, exists := messages[id]
 		if !exists {
+			if len(messages) >= maxPendingStreams {
+				return
+			}
 			assembly = &messageAssembly{
 				totalLen: totalLen,
 				data:     make([]byte, 0, totalLen),

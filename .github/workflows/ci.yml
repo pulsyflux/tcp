@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+env:
+  GONOSUMDB: ""
+  GOFLAGS: -mod=readonly
+
 jobs:
   build-and-test:
     runs-on: windows-latest
@@ -21,17 +25,20 @@ jobs:
 
       - run: go mod download
 
-      - name: Vet
-        run: go vet ./...
-
-      - name: Test
-        run: go test ./...
+      - name: Verify module checksums
+        run: go mod verify
 
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
 
       - name: Vulnerability check
         run: govulncheck ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./...
 
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
